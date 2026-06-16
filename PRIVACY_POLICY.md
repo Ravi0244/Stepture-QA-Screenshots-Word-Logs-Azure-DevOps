@@ -2,7 +2,7 @@
 
 _Last updated: [INSERT DATE]_
 
-QA Test Log Recorder ("the Extension") is a Chrome browser extension that helps software testers capture annotated screenshots and screen recordings of web pages, compile them into a Word document test log, and optionally send the results to the user's own Azure DevOps organization.
+Stepture — QA Screenshots, Word Logs & Azure DevOps ("the Extension") is a Chrome browser extension that helps software testers capture annotated screenshots and screen recordings of web pages, compile them into a Word document test log, and optionally send the results to the user's own Azure DevOps organization.
 
 This policy explains what the Extension does and does not do with your data.
 
