@@ -60,4 +60,4 @@ If this policy changes, the updated version will be posted at this URL with a ne
 
 ## Contact
 
-For questions about this policy, contact: [INSERT YOUR CONTACT EMAIL]
+For questions about this policy, contact: [teja.ravi244@gmail.com]
