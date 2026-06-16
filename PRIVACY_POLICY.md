@@ -1,4 +1,4 @@
-# Privacy Policy — QA Test Log Recorder
+# Privacy Policy — Stepture — QA Screenshots, Word Logs & Azure DevOps
 
 _Last updated: [INSERT DATE]_
 
