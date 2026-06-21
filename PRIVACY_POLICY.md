@@ -1,6 +1,6 @@
 # Privacy Policy — Stepture — QA Screenshots, Word Logs & Azure DevOps
 
-Last updated: June 19, 2026_
+_Last updated: June 20, 2026_
 
 Stepture — QA Screenshots, Word Logs & Azure DevOps ("the Extension") is a Chrome browser extension that helps software testers capture annotated screenshots and screen recordings of web pages, compile them into a Word document test log, and optionally send the results to the user's own Azure DevOps organization.
 
@@ -18,7 +18,7 @@ The following are stored **locally** in your browser using Chrome's local storag
 - **Azure DevOps settings (optional):** your organization name, project name, team, area path, default field values, sign-off presets, default task titles, and a Personal Access Token (PAT) that you enter. These are stored locally so you do not have to re-enter them. The PAT is a credential you generate and control; you can clear it at any time using the "Clear" button in the Extension's settings.
 - **Preferences and history:** your light/dark theme choice and a local log of items you have pushed to Azure DevOps (for quick reference, with links back to those work items), stored locally.
 
-This data remains on your device until you delete it (via the Extension's controls or by removing the Extension). It is not synced to the developer.
+Because a test session may contain many screenshots and screen recordings, the Extension uses unlimited local browser storage. This data remains on your device until you delete it (via the Extension's controls or by removing the Extension), and is not synced to the developer.
 
 ## What the Extension captures
 
