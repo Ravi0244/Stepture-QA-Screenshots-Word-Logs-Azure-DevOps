@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stepture — Find work items</title>
+  <style>
+    :root {
+      --bg:#f7f9fc; --card:#ffffff; --fg:#1a2233; --muted:#64748b; --border:#e2e8f0;
+      --primary:#2563eb; --ice:#eaf1ff; --pass:#15803d; --pass-bg:#e7f6ec; --fail:#c0392b; --fail-bg:#fdeceb;
+    }
+    body[data-theme="dark"] {
+      --bg:#0f1420; --card:#171d2b; --fg:#e7ebf2; --muted:#8a94a6; --border:#2a3242;
+      --primary:#5b8bff; --ice:#1a2740; --pass:#4ade80; --pass-bg:#13301f; --fail:#f87171; --fail-bg:#341a1a;
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--fg); font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif; padding:28px; }
+    .wrap { max-width: 960px; margin: 0 auto; }
+    h1 { font-size:24px; margin:0 0 4px; }
+    .sub { color:var(--muted); margin:0 0 20px; font-size:14px; }
+    .controls { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px; margin-bottom:18px; display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+    .controls .full { grid-column: 1 / -1; }
+    label { font-size:12px; font-weight:600; color:var(--muted); display:block; margin-bottom:5px; }
+    input[type=text], select { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font:inherit; background:var(--bg); color:var(--fg); }
+    .chips { display:flex; flex-wrap:wrap; gap:14px; }
+    .chips label { font-weight:normal; display:flex; align-items:center; gap:5px; color:var(--fg); font-size:13.5px; margin:0; }
+    button { padding:9px 16px; border-radius:8px; border:none; cursor:pointer; font:inherit; font-weight:600; }
+    .primary { background:var(--primary); color:#fff; }
+    .ghost { background:var(--bg); color:var(--fg); border:1px solid var(--border); }
+    .bar { display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+    .bar .search { flex:1; min-width:200px; }
+    .count { color:var(--muted); font-size:13px; }
+    .results { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+    .row { display:flex; align-items:flex-start; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border); }
+    .row:last-child { border-bottom:none; }
+    .row:hover { background:var(--ice); }
+    .row input[type=checkbox] { margin-top:3px; width:16px; height:16px; }
+    .row .main { flex:1; }
+    .row .title { font-weight:600; font-size:14px; }
+    .row .meta { color:var(--muted); font-size:12.5px; margin-top:2px; }
+    .haschild { color:var(--fail); font-weight:600; }
+    .state-badge { display:inline-block; padding:1px 8px; border-radius:10px; font-size:11.5px; font-weight:600; background:var(--ice); color:var(--primary); }
+    .state-resolved { background:var(--pass-bg); color:var(--pass); }
+    .state-closed, .state-done { background:var(--pass-bg); color:var(--pass); }
+    .state-indevelopment, .state-active { background:#fff3cd; color:#92600a; }
+    .state-new, .state-proposed { background:var(--ice); color:var(--primary); }
+    .iter { color:var(--muted); }
+    .item-status { display:inline-block; padding:1px 8px; border-radius:10px; font-size:11.5px; font-weight:600; background:var(--ice); color:var(--primary); }
+    .wi-link { color:var(--primary); text-decoration:none; }
+    .wi-link:hover { text-decoration:underline; }
+    .status { margin:14px 0; font-size:13px; color:var(--muted); }
+    .actionbar { position:sticky; bottom:0; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px 18px; margin-top:16px; display:flex; align-items:center; gap:10px; box-shadow:0 -4px 16px rgba(0,0,0,.06); }
+    .actionbar .spacer { flex:1; }
+    .hidden { display:none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Find work items</h1>
+    <p class="sub">Query stories &amp; defects by state, review them with room to breathe, then send your selection back to create tasks.</p>
+
+    <div class="controls">
+      <div class="full">
+        <label>Work item types</label>
+        <div class="chips">
+          <label><input type="checkbox" class="type" value="User Story" checked /> User Story</label>
+          <label><input type="checkbox" class="type" value="Bug" checked /> Bug</label>
+          <label><input type="checkbox" class="type" value="Issue" /> Issue</label>
+          <label><input type="checkbox" class="type" value="Task" /> Task</label>
+        </div>
+      </div>
+      <div>
+        <label>States (must match your project exactly)</label>
+        <input type="text" id="states" placeholder="e.g. In Development, Resolved" value="In Development, Resolved" />
+      </div>
+      <div>
+        <label>Scope</label>
+        <select id="scope">
+          <option value="mine">Only items assigned to me</option>
+          <option value="area">Under an area path…</option>
+          <option value="all">Whole project (widest)</option>
+        </select>
+      </div>
+      <div class="full" id="areaWrap" style="display:none;">
+        <label>Area path (single backslash, e.g. Project\Team)</label>
+        <input type="text" id="areaPath" placeholder="Project\Team" />
+      </div>
+      <div class="full">
+        <button id="findBtn" class="primary">Find items</button>
+      </div>
+    </div>
+
+    <p id="status" class="status"></p>
+
+    <div id="resultsWrap" class="hidden">
+      <div class="bar">
+        <input type="text" id="search" class="search" placeholder="Search results by ID, title, type, state, assignee…" />
+        <span id="count" class="count"></span>
+        <button id="selAll" class="ghost">Select all</button>
+        <button id="selNone" class="ghost">None</button>
+      </div>
+      <div id="results" class="results"></div>
+      <div class="actionbar">
+        <span id="selCount" class="count">0 selected</span>
+        <span class="spacer"></span>
+        <button id="useSelected" class="primary">Use selected → create tasks</button>
+      </div>
+    </div>
+  </div>
+  <script src="bulkfind.js"></script>
+</body>
+</html>

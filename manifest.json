@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Stepture — QA Screenshots, Word Logs & Azure DevOps",
+  "version": "1.4.20",
+  "description": "Capture annotated screenshots while testing, export a Word test log, and push bugs, test cases & evidence to Azure DevOps.",
+  "permissions": ["activeTab", "tabs", "storage", "unlimitedStorage", "scripting"],
+  "host_permissions": ["<all_urls>", "https://dev.azure.com/*", "https://vssps.dev.azure.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Stepture",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

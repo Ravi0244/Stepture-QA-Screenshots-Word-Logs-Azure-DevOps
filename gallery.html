@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QA Test Log — Screenshots</title>
+  <style>
+    :root {
+      --bg:#ffffff; --card:#ffffff; --fg:#1a2233; --muted:#8b95a5; --border:#eaecf0;
+      --primary:#3b6ef5; --pass:#15803d; --pass-bg:#e7f6ec; --fail:#c0392b; --fail-bg:#fdeceb;
+    }
+    body[data-theme="dark"] {
+      --bg:#0f1420; --card:#171d2b; --fg:#e7ebf2; --muted:#8a94a6; --border:#2a3242;
+      --primary:#5b8bff; --pass:#4ade80; --pass-bg:#13301f; --fail:#f87171; --fail-bg:#341a1a;
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--fg); font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif; padding:24px; }
+    h1 { font-size:22px; margin:0 0 4px; }
+    .sub { color:var(--muted); margin:0 0 20px; font-size:14px; }
+    .scenario { margin-bottom:28px; }
+    .scenario h2 { font-size:16px; margin:0 0 12px; padding-bottom:6px; border-bottom:2px solid var(--border); }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; display:flex; flex-direction:column; }
+    .card img { width:100%; height:160px; object-fit:cover; cursor:zoom-in; background:#eee; }
+    .card .body { padding:10px; flex:1; display:flex; flex-direction:column; gap:6px; }
+    .card .cap { font-size:13px; font-weight:600; }
+    .card .meta { font-size:11px; color:var(--muted); }
+    .st { align-self:flex-start; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px; }
+    .st.Pass { background:var(--pass-bg); color:var(--pass); }
+    .st.Fail { background:var(--fail-bg); color:var(--fail); }
+    .card .controls { display:flex; gap:4px; margin-top:auto; }
+    .card button { flex:1; font-size:12px; padding:5px; border:1px solid var(--border); background:#f5f7fa; border-radius:6px; cursor:pointer; }
+    .card button:hover { background:#eef1f5; }
+    .card button.del:hover { background:var(--fail-bg); color:var(--fail); border-color:var(--fail); }
+    .empty { color:var(--muted); font-style:italic; }
+    /* Lightbox */
+    #lightbox { position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:999; cursor:zoom-out; }
+    #lightbox img { max-width:94vw; max-height:94vh; border-radius:6px; }
+    .toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .refresh { font-size:13px; padding:7px 12px; border:1px solid var(--border); background:#fff; border-radius:6px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <div>
+      <h1 id="docTitle">Screenshots</h1>
+      <p class="sub" id="sub"></p>
+    </div>
+    <button class="refresh" id="refreshBtn">↻ Refresh</button>
+  </div>
+  <div id="content"></div>
+  <div id="lightbox"><img id="lightboxImg" /></div>
+
+  <script src="gallery.js"></script>
+</body>
+</html>

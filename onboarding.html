@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stepture — Welcome</title>
+  <style>
+    :root {
+      --bg: #f5f7fa; --card: #ffffff; --fg: #1f2733; --muted: #6b7785;
+      --border: #e2e6ec; --primary: #2563eb; --soft: #eef2f8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--fg);
+      font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      line-height: 1.5; padding: 40px 20px;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+
+    /* Pin pointer toward top-right toolbar */
+    .pin-pointer {
+      position: fixed; top: 10px; right: 64px; display: flex; align-items: center; gap: 8px;
+      color: var(--primary); font-weight: 600; font-size: 14px;
+      background: #fff; padding: 8px 14px; border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(16,24,40,.18); border: 1px solid #e2e6ec;
+    }
+    .pin-pointer .arrow { font-size: 22px; line-height: 1; }
+    @keyframes pinbounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    .pin-pointer .arrow { animation: pinbounce 1.4s ease-in-out infinite; }
+
+    h1 { font-size: 24px; margin: 0 0 6px; }
+    .sub { color: var(--muted); margin: 0 0 28px; }
+
+    .card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 22px 24px; margin-bottom: 18px;
+    }
+    .card h2 { font-size: 16px; margin: 0 0 12px; }
+
+    .pin-steps { display: flex; gap: 14px; flex-wrap: wrap; }
+    .pin-step {
+      flex: 1; min-width: 180px; background: var(--soft); border-radius: 10px; padding: 14px;
+      font-size: 14px;
+    }
+    .pin-step .n {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px; background: var(--primary); color: #fff;
+      border-radius: 50%; font-size: 12px; font-weight: 700; margin-bottom: 8px;
+    }
+    .puzzle { font-size: 18px; vertical-align: -2px; }
+
+    ol.how { margin: 0; padding-left: 20px; }
+    ol.how li { margin-bottom: 8px; }
+    ol.how strong { color: var(--fg); }
+
+    .tip {
+      font-size: 13px; color: var(--muted); background: var(--soft);
+      border-left: 3px solid var(--primary); border-radius: 6px; padding: 10px 12px; margin-top: 14px;
+    }
+    .foot { text-align: center; color: var(--muted); font-size: 13px; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <div class="pin-pointer">
+    <span class="arrow">↑</span><span>Click the puzzle-piece icon up here to pin Stepture</span>
+  </div>
+
+  <div class="wrap">
+    <h1>Stepture is installed 🎉</h1>
+    <p class="sub">Capture annotated screenshots while you test, then export a clean Word test log — grouped by scenario.</p>
+
+    <div class="card">
+      <h2>📌 Pin it for one-click access</h2>
+      <div class="pin-steps">
+        <div class="pin-step">
+          <span class="n">1</span>
+          <div>Click the <span class="puzzle">🧩</span> puzzle-piece icon at the top-right of Chrome.</div>
+        </div>
+        <div class="pin-step">
+          <span class="n">2</span>
+          <div>Find <strong>Stepture</strong> in the list.</div>
+        </div>
+        <div class="pin-step">
+          <span class="n">3</span>
+          <div>Click the <strong>pin</strong> icon next to it so it stays on your toolbar.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>How to use it</h2>
+      <ol class="how">
+        <li>Click the icon and <strong>Start Session</strong> — enter a document title, tester, environment, and your first scenario.</li>
+        <li>On the page, the toolbar appears. Toggle <strong>Annotate: On</strong>, then add boxes, arrows, highlights, text labels, or redactions, and hit <strong>Capture</strong>.</li>
+        <li>Add a description, mark <strong>Pass/Fail</strong> (Fail adds Expected/Actual), and the step is saved.</li>
+        <li>Finished a scenario? Click <strong>＋ Scenario</strong> to start the next one — steps restart at 1.</li>
+        <li>Open the popup and <strong>Export Word Log</strong> to download the .docx.</li>
+      </ol>
+      <div class="tip">Tip: while <strong>Annotate</strong> is on, the overlay catches clicks — toggle it off to scroll or click the page, then back on to draw.</div>
+    </div>
+
+    <p class="foot">You can close this tab. This page only appears once.</p>
+    <p class="foot">Need help connecting Azure DevOps? Open <strong>📖 Help</strong> from the extension popup anytime.</p>
+  </div>
+</body>
+</html>
