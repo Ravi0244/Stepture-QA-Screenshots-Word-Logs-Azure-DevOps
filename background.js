@@ -11,6 +11,69 @@
 // since it isn't persisted by Chrome.
 chrome.storage.local.setAccessLevel({ accessLevel: "TRUSTED_CONTEXTS" }).catch(() => {});
 
+// ===================== PAT encryption at rest =====================
+// The PAT is encrypted (AES-GCM 256) before it ever touches chrome.storage.local.
+// The key itself lives in this extension's own IndexedDB as a non-extractable
+// CryptoKey — it can be *used* to encrypt/decrypt from code running in this
+// service worker, but its raw bytes can never be read out by any script, ever,
+// even by this same code. That means: the on-disk storage.local file is no
+// longer human-readable plaintext (protects against e.g. someone browsing the
+// raw profile files, or a screen-share of DevTools' storage inspector).
+// This is on top of, not instead of, the TRUSTED_CONTEXTS lock above.
+const KEY_DB_NAME = "stepture_keys";
+const KEY_STORE = "keys";
+const KEY_RECORD_ID = "pat_key";
+
+function openKeyDb() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(KEY_DB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(KEY_STORE);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function getOrCreateCryptoKey() {
+  const db = await openKeyDb();
+  const existing = await new Promise((resolve, reject) => {
+    const tx = db.transaction(KEY_STORE, "readonly");
+    const req = tx.objectStore(KEY_STORE).get(KEY_RECORD_ID);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  if (existing) return existing;
+
+  const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(KEY_STORE, "readwrite");
+    tx.objectStore(KEY_STORE).put(key, KEY_RECORD_ID);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+  return key;
+}
+
+function bufToB64(buf) { return btoa(String.fromCharCode(...new Uint8Array(buf))); }
+function b64ToBuf(b64) { return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)); }
+
+async function encryptPat(plainText) {
+  const key = await getOrCreateCryptoKey();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(plainText));
+  return { enc: true, iv: bufToB64(iv), ct: bufToB64(ct) };
+}
+
+async function decryptPat(stored) {
+  if (!stored) return "";
+  if (typeof stored === "string") return stored; // legacy plaintext from before encryption was added
+  if (!stored.enc) return "";
+  const key = await getOrCreateCryptoKey();
+  const iv = b64ToBuf(stored.iv);
+  const ctBuf = b64ToBuf(stored.ct);
+  const plainBuf = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ctBuf);
+  return new TextDecoder().decode(plainBuf);
+}
+
 const STORAGE_KEY = "qa_testlog_session";
 const BACKUP_KEY = "qa_testlog_session_backup";   // silent auto-snapshot for recovery
 const ADO_KEY = "qa_testlog_ado";   // { org, project, pat }
@@ -91,6 +154,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "ADO_TEST":
       adoTestConnection(msg.settings).then((r) => sendResponse({ ok: true, ...r })).catch((e) => sendResponse({ ok: false, error: e.message }));
+      return true;
+
+    case "ADO_SAVE_SETTINGS":
+      saveAdoSettingsEncrypted(msg.fields).then(() => sendResponse({ ok: true })).catch((e) => sendResponse({ ok: false, error: e.message }));
       return true;
 
     case "ADO_PUSH":
@@ -608,7 +675,25 @@ async function getAdoSettings(override) {
   const stored = await chrome.storage.local.get(ADO_KEY);
   const s = stored[ADO_KEY];
   if (!s || !s.org || !s.project || !s.pat) throw new Error("Azure DevOps is not configured. Add org, project, and PAT in settings.");
-  return s;
+  const pat = await decryptPat(s.pat);
+  if (!pat) throw new Error("Could not decrypt the stored PAT — re-enter it in ADO settings.");
+  return { ...s, pat };
+}
+
+// Save ADO settings, encrypting the PAT before it touches storage. Called via
+// message from popup.js so the encryption key never needs to exist outside
+// this service worker. `patRaw === null` means "keep the existing PAT" (used
+// when the popup form field was left blank because we never redisplay it).
+async function saveAdoSettingsEncrypted(fields) {
+  const prevStored = (await chrome.storage.local.get(ADO_KEY))[ADO_KEY] || {};
+  let patField = prevStored.pat; // keep existing encrypted value by default
+  if (fields.patRaw) patField = await encryptPat(fields.patRaw);
+  if (!patField) throw new Error("PAT is required.");
+  const s = { ...fields };
+  delete s.patRaw;
+  s.pat = patField;
+  await chrome.storage.local.set({ [ADO_KEY]: s });
+  return true;
 }
 
 function adoAuthHeader(pat) {

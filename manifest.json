@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Stepture — QA Screenshots, Word Logs & Azure DevOps",
-  "version": "1.4.20",
+  "version": "1.4.21",
   "description": "Capture annotated screenshots while testing, export a Word test log, and push bugs, test cases & evidence to Azure DevOps.",
   "permissions": ["activeTab", "tabs", "storage", "unlimitedStorage", "scripting"],
   "host_permissions": ["<all_urls>", "https://dev.azure.com/*", "https://vssps.dev.azure.com/*"],

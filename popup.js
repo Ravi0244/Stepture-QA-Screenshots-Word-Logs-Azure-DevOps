@@ -909,7 +909,10 @@ async function toggleAdoPanel() {
     const s = stored[ADO_KEY] || {};
     $("adoOrg").value = s.org || "";
     $("adoProject").value = s.project || "";
-    $("adoPat").value = s.pat || "";
+    // PAT is encrypted at rest and never redisplayed once saved — leave blank.
+    // saveAdoSettings() treats a blank PAT field as "keep the existing one".
+    $("adoPat").value = "";
+    $("adoPat").placeholder = s.pat ? "Saved — leave blank to keep, or paste a new PAT to replace" : "Paste your PAT";
     $("adoTeam").value = s.team || "";
     $("adoAreaPath").value = s.areaPath || "";
     $("adoDefAssigned").value = s.defAssigned || "";
@@ -922,31 +925,39 @@ async function toggleAdoPanel() {
 
 async function saveAdoSettings() {
   const prev = (await chrome.storage.local.get(ADO_KEY))[ADO_KEY] || {};
-  const s = {
+  const patTyped = $("adoPat").value.trim();
+  const fields = {
     org: $("adoOrg").value.trim(),
     project: $("adoProject").value.trim(),
-    pat: $("adoPat").value.trim(),
     team: $("adoTeam").value.trim(),
     areaPath: $("adoAreaPath").value.trim(),
     defAssigned: $("adoDefAssigned").value.trim(),
     defFields: $("adoDefFields").value.trim(),
     signoffPresets: $("adoSignoffPresets").value.trim(),
-    defTasks: $("adoDefTasks").value.trim()
+    defTasks: $("adoDefTasks").value.trim(),
+    patRaw: patTyped || null   // null = keep existing encrypted PAT (background fills it in)
   };
   const st = $("adoSettingsStatus");
-  if (!s.org || !s.project || !s.pat) { st.textContent = "Org, Project, and PAT are required."; return; }
-  await chrome.storage.local.set({ [ADO_KEY]: s });
-  st.textContent = "Saved ✓";
+  if (!fields.org || !fields.project || (!patTyped && !prev.pat)) {
+    st.textContent = "Org, Project, and PAT are required.";
+    return;
+  }
+  const res = await chrome.runtime.sendMessage({ type: "ADO_SAVE_SETTINGS", fields });
+  if (!res || !res.ok) { st.textContent = "✗ " + (res?.error || "Failed to save."); return; }
+  $("adoPat").value = "";
+  $("adoPat").placeholder = "Saved — leave blank to keep, or paste a new PAT to replace";
+  st.textContent = "Saved ✓ (PAT encrypted at rest)";
 }
 
 async function testAdoConnection() {
   const st = $("adoSettingsStatus");
   st.textContent = "Testing…";
-  const settings = {
-    org: $("adoOrg").value.trim(),
-    project: $("adoProject").value.trim(),
-    pat: $("adoPat").value.trim()
-  };
+  const patTyped = $("adoPat").value.trim();
+  // If the PAT field was left blank (we never redisplay the saved PAT), fall back
+  // to whatever's already saved+encrypted rather than testing an empty token.
+  const settings = patTyped
+    ? { org: $("adoOrg").value.trim(), project: $("adoProject").value.trim(), pat: patTyped }
+    : undefined;
   const res = await chrome.runtime.sendMessage({ type: "ADO_TEST", settings });
   st.textContent = res && res.ok ? "✓ " + res.message : "✗ " + (res?.error || "failed");
 }
